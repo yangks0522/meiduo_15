@@ -75,10 +75,21 @@ WSGI_APPLICATION = 'mall.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'HOST': '127.0.0.1',  # 数据库主机
+        'PORT': 3306,  # 数据库端口
+        'USER': 'root',  # 数据库用户名
+        'PASSWORD': 'mysql',  # 数据库用户密码
+        'NAME': 'meiduo_mall_15'  # 数据库名字
     }
 }
 
@@ -182,4 +193,9 @@ REST_FRAMEWORK = {
     # 异常处理
     'EXCEPTION_HANDLER': 'utils.exception.exception_handler',
 }
+
+# 我们定义好了自己的用户模型,需要替换,
+# 我们通过AUTH_USER_MODEL 告知系统用那个模型
+# 语法形式为 子应用.模型类     # 系统根据.分割   .点之前为子应用 .之后为模型
+AUTH_USER_MODEL = 'users.User'
 
