@@ -59,7 +59,7 @@ class RegisterUsernameCountView(APIView):
 """
 
 
-class ReigsterPhoneCountAPIView(APIView):
+class RegisterPhoneCountAPIView(APIView):
     """
     查询手机号的个数
     GET     /users/phones/(?P<mobile1[345789]\d{9})/count/
