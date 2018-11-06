@@ -10,6 +10,7 @@ from rest_framework.views import APIView
 from libs.captcha.captcha import captcha
 from django_redis import get_redis_connection
 
+from users.serializers import RegisterCreateUserSerializer
 from verifications import constant
 
 """
@@ -81,4 +82,5 @@ class RegisterSmsCodeView(APIView):
 
         # 5.返回响应
         return Response({'msg':'ok'})
+
 

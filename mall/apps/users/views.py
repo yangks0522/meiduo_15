@@ -4,6 +4,7 @@ from django.shortcuts import render
 from rest_framework.response import Response
 
 from users.models import User
+from users.serializers import RegisterCreateUserSerializer
 
 """
 用户名
@@ -69,3 +70,30 @@ class RegisterPhoneCountAPIView(APIView):
         count = User.objects.filter(mobile=mobile).count()
         # 返回数据
         return Response({"count":count})
+
+
+"""
+1.前端应该将6个参数(username,password,password2,mobile,sms_code,allow)  传递给后端
+
+接收前端提交的数据
+校验数据
+数据入库
+返回响应
+
+POST        users/
+
+"""
+
+# APIView
+# GenericAPIView
+# ListAPIView RetrieveAPIViews
+
+
+class RegisterCreateUserView(APIView):
+
+    def post(self,request):
+        data = request.data
+        serializer = RegisterCreateUserSerializer(data=data)
+        serializer.is_valid()
+        serializer.save()
+        return Response(serializer.data)
