@@ -33,11 +33,11 @@ CORS_ORIGIN_WHITELIST = (
 CORS_ALLOW_CREDENTIALS = True  # 允许携带cookie
 
 # 允许被 api.meiduo.site 和 127.0.0.1 访问我们的后台 这个只是后台的安全策略 和cors没有关系
-ALLOWED_HOSTS = ['api.meiduo.site','127.0.0.1']
+ALLOWED_HOSTS = ['api.meiduo.site', '127.0.0.1']
 
 import sys
 
-sys.path.insert(0,os.path.join(BASE_DIR,'apps'))
+sys.path.insert(0, os.path.join(BASE_DIR, 'apps'))
 # Application definition
 
 INSTALLED_APPS = [
@@ -126,9 +126,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 
-LANGUAGE_CODE = 'zh-Hans'# 'en-us'
+LANGUAGE_CODE = 'zh-Hans'  # 'en-us'
 
-TIME_ZONE = 'Asia/Shanghai' # 'UTC'
+TIME_ZONE = 'Asia/Shanghai'  # 'UTC'
 
 USE_I18N = True
 
@@ -166,7 +166,6 @@ CACHES = {
 }
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "session"
-
 
 LOGGING = {
     'version': 1,
@@ -211,10 +210,22 @@ LOGGING = {
 REST_FRAMEWORK = {
     # 异常处理
     'EXCEPTION_HANDLER': 'utils.exception.exception_handler',
+    # 修改认证顺序 JWT放在第一位 优先采用JWT认证
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ),
 }
 
 # 我们定义好了自己的用户模型,需要替换,
 # 我们通过AUTH_USER_MODEL 告知系统用那个模型
 # 语法形式为 子应用.模型类     # 系统根据.分割   .点之前为子应用 .之后为模型
 AUTH_USER_MODEL = 'users.User'
+import datetime
 
+JWT_AUTH = {
+    'JWT_RESPONSE_PAYLOAD_HANDLER':
+        'utils.users.jwt_response_payload_handler',
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(days=1)
+}
