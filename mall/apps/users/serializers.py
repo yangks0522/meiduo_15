@@ -3,6 +3,18 @@ from users.models import User
 import re
 from django_redis import get_redis_connection
 
+from rest_framework_jwt.settings import api_settings
+
+
+def produce_token(user):
+    jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
+    jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
+
+    # payload可以装在用户数据
+    payload = jwt_payload_handler(user)
+    token = jwt_encode_handler(payload)
+    return token
+
 
 # 入库有模型  选择ModelSerializer
 class RegisterCreateUserSerializer(serializers.ModelSerializer):
@@ -17,6 +29,7 @@ class RegisterCreateUserSerializer(serializers.ModelSerializer):
     allow = serializers.CharField(label='确认协议', write_only=True)
 
     token = serializers.CharField(label='token', read_only=True)
+
     # token = serializers.CharField(label='token', required=False)
 
     # ModelSerializer自动生成字段的时候 是根据fields 列表生成的
@@ -97,14 +110,17 @@ class RegisterCreateUserSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
 
-        from rest_framework_jwt.settings import api_settings
+        # 生成token
+        # from rest_framework_jwt.settings import api_settings
+        #
+        # jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
+        # jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
+        #
+        # # payload可以装在用户数据
+        # payload = jwt_payload_handler(user)
+        # token = jwt_encode_handler(payload)
 
-        jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
-        jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
-
-        # payload可以装在用户数据
-        payload = jwt_payload_handler(user)
-        token = jwt_encode_handler(payload)
+        token = produce_token(user)
 
         user.token = token
         return user
