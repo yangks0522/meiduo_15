@@ -16,11 +16,34 @@ class RegisterCreateUserSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(label='确认密码', write_only=True)
     allow = serializers.CharField(label='确认协议', write_only=True)
 
+    token = serializers.CharField(label='token', read_only=True)
+    # token = serializers.CharField(label='token', required=False)
+
     # ModelSerializer自动生成字段的时候 是根据fields 列表生成的
     class Meta:
         model = User
 
-        fields = ['username', 'password', 'mobile', 'sms_code', 'password2', 'allow']
+        fields = ['username', 'password', 'mobile', 'sms_code', 'password2', 'allow', 'token']
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'username': {
+                'min_length': 5,
+                'max_length': 20,
+                'error_messages': {
+                    'min_length': '仅允许5-20个字符的用户名',
+                    'max_length': '仅允许5-20个字符的用户名',
+                }
+            },
+            'password': {
+                'write_only': True,
+                'min_length': 8,
+                'max_length': 20,
+                'error_messages': {
+                    'min_length': '仅允许8-20个字符的密码',
+                    'max_length': '仅允许8-20个字符的密码',
+                }
+            }
+        }
 
     """
     1.校验手机号        单个字段
@@ -73,4 +96,15 @@ class RegisterCreateUserSerializer(serializers.ModelSerializer):
         # 对密码进行加密
         user.set_password(validated_data['password'])
         user.save()
+
+        from rest_framework_jwt.settings import api_settings
+
+        jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
+        jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
+
+        # payload可以装在用户数据
+        payload = jwt_payload_handler(user)
+        token = jwt_encode_handler(payload)
+
+        user.token = token
         return user

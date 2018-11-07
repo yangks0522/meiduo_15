@@ -97,3 +97,21 @@ class RegisterCreateUserView(APIView):
         serializer.is_valid()
         serializer.save()
         return Response(serializer.data)
+
+
+"""
+断点:
+    在程序的入口处
+    部分代码实现一个功能
+    认为哪里有错误
+    不知道就(每行都加)
+
+事件的触发点
+    很好的确定代码写在哪里
+
+用户注册之后直接跳转到首页,默认表示已经登陆
+
+注册完成应该返回给客户端一个token
+如何生成token
+在哪里返回token
+"""

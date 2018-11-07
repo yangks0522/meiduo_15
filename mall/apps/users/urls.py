@@ -18,3 +18,9 @@ header:     eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
 payload:    eyJleHAiOjE1NDE1ODA0NDQsInVzZXJfaWQiOjYsInVzZXJuYW1lIjoiaXRjYXN0IiwiZW1haWwiOiIifQ.
 signature:  kXos2lYWkEIZPAb5lr7vWO-gqa4tDWbOPc4arQYyedE
 """
+
+"""
+我们蚕蛹jwt的认证方式     jwt的认证方式是在 rest_framework 基础上做的   jwt其实就是用的rest_framework认证 ,只不过返回的是token
+rest_framework认证 是根据用户名来判断的
+我们需要判断用户输入的是手机号还是用户名
+"""
