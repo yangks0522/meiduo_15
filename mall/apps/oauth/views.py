@@ -24,7 +24,7 @@ from django.conf import settings
 
 class OauthQQURLView(APIView):
     def get(self, request):
-        state = 'test'
+        state = '/'
         # 创建oauth对象
         # client_id=None, client_secret=None, redirect_uri=None, state=None
         oauth = OAuthQQ(
@@ -83,8 +83,14 @@ class OauthQQUserView(APIView):
 
             # 没有绑定过
         else:
-            from users.serializers import produce_token
-            token = produce_token(qquser.user)
+            from rest_framework_jwt.settings import api_settings
+
+            jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
+            jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
+
+            payload = jwt_payload_handler(qquser.user)
+            token = jwt_encode_handler(payload)
+
             return Response({
                 'user_id': qquser.user.id,
                 'username': qquser.user.username,
@@ -97,15 +103,19 @@ class OauthQQUserView(APIView):
         serializer = OauthQQUserSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         qquser = serializer.save()
-        from users.serializers import produce_token
-        tokens = produce_token(data.user)
-        # 4.返回响应
-        response = Response({
-            'token': tokens.token,
-            'user_id': tokens.user.id,
-            'username': tokens.user.username,
+        from rest_framework_jwt.settings import api_settings
+
+        jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
+        jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
+
+        payload = jwt_payload_handler(qquser.user)
+        token = jwt_encode_handler(payload)
+
+        return Response({
+            'user_id': qquser.user.id,
+            'username': qquser.user.username,
+            'token': token
         })
-        return response
 
 
 """

@@ -27,15 +27,13 @@ class OauthQQUserSerializer(serializers.Serializer):
             raise serializers.ValidationError('access_token错误')
         attrs['openid'] = openid
         sms_code = attrs.get('sms_code')
-        # from django_redis import get_redis_connection
-        # redis_conn = get_redis_connection('code')
-        # redis_code = redis_conn.get('sms_%s' % attrs['moblie'])
-        # if redis_code is None:
-        #     raise serializers.ValidationError('短信验证码已过期')
-        # if redis_code.decode != sms_code:
-        #     raise serializers.ValidationError('验证码不一致')
-        from users.serializers import validate_note
-        validate_note(attrs['mobile'], sms_code)
+        from django_redis import get_redis_connection
+        redis_conn = get_redis_connection('code')
+        redis_code = redis_conn.get('sms_%s' % attrs['mobile'])
+        if redis_code is None:
+            raise serializers.ValidationError('短信验证码已过期')
+        if redis_code.decode() != sms_code:
+            raise serializers.ValidationError('验证码不一致')
         # 判断手机号
         mobile = attrs.get('mobile')
         try:

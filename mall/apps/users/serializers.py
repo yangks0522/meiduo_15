@@ -5,18 +5,6 @@ from django_redis import get_redis_connection
 
 from rest_framework_jwt.settings import api_settings
 
-# 校验短信验证码
-def validate_note(mobile, sms_code):
-    redis_conn = get_redis_connection('code')
-
-    sms_code_redis = redis_conn.get("sms_%s" % mobile)
-
-    if not sms_code_redis:
-        raise serializers.ValidationError('验证码已过期')
-
-    if sms_code_redis.decode() != sms_code:
-        raise serializers.ValidationError('验证码错误')
-
 
 # 生成 jwt  token
 def produce_token(user):
@@ -101,16 +89,16 @@ class RegisterCreateUserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('密码不一致')
 
         # 短信
-        validate_note(mobile, sms_code)
-        # redis_conn = get_redis_connection('code')
-        #
-        # sms_code_redis = redis_conn.get("sms_%s" % mobile)
-        #
-        # if not sms_code_redis:
-        #     raise serializers.ValidationError('验证码已过期')
-        #
-        # if sms_code_redis.decode() != sms_code:
-        #     raise serializers.ValidationError('验证码错误')
+        # validate_note(mobile, sms_code)
+        redis_conn = get_redis_connection('code')
+
+        sms_code_redis = redis_conn.get("sms_%s" % mobile)
+
+        if not sms_code_redis:
+            raise serializers.ValidationError('验证码已过期')
+
+        if sms_code_redis.decode() != sms_code:
+            raise serializers.ValidationError('验证码错误')
 
         return attrs
 
@@ -125,16 +113,14 @@ class RegisterCreateUserSerializer(serializers.ModelSerializer):
         user.save()
 
         # 生成token
-        # from rest_framework_jwt.settings import api_settings
-        #
-        # jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
-        # jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
-        #
-        # # payload可以装在用户数据
-        # payload = jwt_payload_handler(user)
-        # token = jwt_encode_handler(payload)
+        from rest_framework_jwt.settings import api_settings
 
-        token = produce_token(user)
+        jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
+        jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
+
+        # payload可以装在用户数据
+        payload = jwt_payload_handler(user)
+        token = jwt_encode_handler(payload)
 
         user.token = token
         return user
