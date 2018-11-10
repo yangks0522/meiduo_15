@@ -65,11 +65,12 @@ class RegisterPhoneCountAPIView(APIView):
     查询手机号的个数
     GET     /users/phones/(?P<mobile1[345789]\d{9})/count/
     """
-    def get(self,request,mobile):
+
+    def get(self, request, mobile):
         # 通过模型查询获取手机号个数
         count = User.objects.filter(mobile=mobile).count()
         # 返回数据
-        return Response({"count":count})
+        return Response({"count": count})
 
 
 """
@@ -84,14 +85,14 @@ POST        users/
 
 """
 
+
 # APIView
 # GenericAPIView
 # ListAPIView RetrieveAPIViews
 
 
 class RegisterCreateUserView(APIView):
-
-    def post(self,request):
+    def post(self, request):
         data = request.data
         serializer = RegisterCreateUserSerializer(data=data)
         serializer.is_valid()
@@ -115,3 +116,131 @@ class RegisterCreateUserView(APIView):
 如何生成token
 在哪里返回token
 """
+
+"""
+1.校验 只有当前用户登陆
+查询用户信息
+
+
+GET     /users/infos/
+"""
+
+from rest_framework.permissions import IsAuthenticated
+from .serializers import UserCenterSerializer
+
+# class UserCenterView(APIView):
+#     permission_classes = [IsAuthenticated]
+#
+#     def get(self, request):
+#         """
+#         获取登陆用户的信息
+#         返回数据
+#         """
+#         # 获取登陆用户的信息
+#         user = request.user
+#         # 返回数据
+#         serializer = UserCenterSerializer(user)
+#         return Response(serializer.data)
+
+from rest_framework.generics import RetrieveAPIView
+
+
+class UserCenterView(RetrieveAPIView):
+    # 权限认证
+    permission_classes = [IsAuthenticated]
+
+    serializer_class = UserCenterSerializer
+
+    # 重写get_object方法
+    def get_object(self):
+        # 获取指定某一个对象
+        return self.request.user
+
+
+"""
+当用户点击设置的时候,输入邮箱信息   当用户点击保存时需要将邮箱信息发送给后端
+这个接口必须登陆才能访问
+1.接收邮箱数据
+2.校验参数
+3.更新数据
+4.发送激活邮箱
+5.返回响应
+
+PUT     /users/emails/
+"""
+from rest_framework.permissions import IsAuthenticated
+from .serializers import UserEmailSerializer
+from mall import settings
+from .utils import generic_active_url
+
+
+class UserEmailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        # 1.接收邮箱数据
+        data = request.data
+        user = request.user
+        # 2.校验参数
+        serializer = UserEmailSerializer(instance=user, data=data)
+        serializer.is_valid(raise_exception=True)
+        # 3.更新数据
+        serializer.save()
+        # 4.发送激活邮箱
+        from celery_tasks.email.tasks import send_verify_mail
+        send_verify_mail(data.get('email'), request.user.id)
+
+        # from django.core.mail import send_mail
+        # # subject, message, from_email, recipient_list,
+        # subject = '美多商城激活邮件'
+        # message = ''
+        # from_email = settings.EMAIL_FROM
+        # email = data.get('email')
+        # recipient_list = [email]
+        #
+        # verify_url = generic_active_url(user.id, email)
+        #
+        # html_message = '<p>尊敬的用户您好！</p>' \
+        #                '<p>感谢您使用美多商城。</p>' \
+        #                '<p>您的邮箱为：%s 。请点击此链接激活您的邮箱：</p>' \
+        #                '<p><a href="%s">%s<a></p>' % (email, verify_url, verify_url)
+        # send_mail(
+        #     subject=subject,
+        #     message=message,
+        #     from_email=from_email,
+        #     recipient_list=recipient_list,
+        #     html_message=html_message
+        # )
+
+        # 5.返回响应
+        return Response(serializer.data)
+
+from rest_framework import status
+from .utils import get_active_user
+
+
+class UserActiveEmailView(APIView):
+    def get(self, request):
+        """
+        当用户点击激活连接的时候,会跳转到一个页面,这个页面中含有 token(含有 用户id和email信息)信息
+        前端需要发送一个ajax请求,将 token 发送给后端
+
+        1. 接受token
+        2. 对token进行解析
+        3. 返回响应
+
+        GET     /users/emails/verification/?token=xxx
+        """
+        # 1. 接受token
+        token = request.query_params.get('token')
+        if token is None:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        # 2. 对token进行解析
+        user = get_active_user(token)
+        if user is None:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        user.email_active = True
+        user.save()
+        # 3. 返回响应
+        return Response({'msg':'ok'})
+

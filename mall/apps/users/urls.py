@@ -10,8 +10,12 @@ urlpatterns = [
     url(r'^phones/(?P<mobile>1[345789]\d{9})/count/$', views.RegisterPhoneCountAPIView.as_view(), name='phonecount'),
     url(r'^$', views.RegisterCreateUserView.as_view()),
 
-    # 定义url
-    url(r'^auths/', obtain_jwt_token),
+    # 定义url jwt提供了token的视图
+    url(r'^auths/', obtain_jwt_token, name='auths'),
+
+    url(r'^infos/$', views.UserCenterView.as_view()),
+    url(r'^emails/$', views.UserEmailView.as_view()),
+    url(r'^emails/verification/$', views.UserActiveEmailView.as_view()),
 ]
 """
 header:     eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
