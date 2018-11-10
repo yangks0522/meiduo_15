@@ -1,5 +1,5 @@
 from django.apps import AppConfig
 
 
-class AreaConfig(AppConfig):
+class AreasConfig(AppConfig):
     name = 'areas'
