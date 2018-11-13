@@ -12,10 +12,13 @@ urlpatterns = [
 
     # 定义url jwt提供了token的视图
     url(r'^auths/', obtain_jwt_token, name='auths'),
-
     url(r'^infos/$', views.UserCenterView.as_view()),
     url(r'^emails/$', views.UserEmailView.as_view()),
     url(r'^emails/verification/$', views.UserActiveEmailView.as_view()),
+    url(r'^addresses/$', views.AddressCreateView.as_view()),
+    url(r'^addresses/(?P<pk>\d+)/$', views.AddressDeleteView.as_view()),
+    url(r'^addresses/(?P<pk>\d+)/title/$', views.AdderssAlterView.as_view()),
+    url(r'^addresses/(?P<pk>\d+)/status/$', views.AddressDefaultView.as_view()),
 ]
 """
 header:     eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.

@@ -3,8 +3,8 @@ from django.shortcuts import render
 # Create your views here.
 from rest_framework.response import Response
 
-from users.models import User
-from users.serializers import RegisterCreateUserSerializer
+from users.models import User, Address
+from users.serializers import RegisterCreateUserSerializer, AddressAlterSerializer
 
 """
 用户名
@@ -215,6 +215,7 @@ class UserEmailView(APIView):
         # 5.返回响应
         return Response(serializer.data)
 
+
 from rest_framework import status
 from .utils import get_active_user
 
@@ -242,5 +243,76 @@ class UserActiveEmailView(APIView):
         user.email_active = True
         user.save()
         # 3. 返回响应
-        return Response({'msg':'ok'})
+        return Response({'msg': 'ok'})
 
+
+"""
+新增地址功能
+
+前段将用户提交的数据传递给后端
+后端接收数据
+校验数据
+数据入库
+返回响应
+
+
+POST        users/addresses/
+"""
+
+from rest_framework.generics import CreateAPIView, ListAPIView, DestroyAPIView, UpdateAPIView
+from .serializers import AddressSerializer
+
+
+class AddressCreateView(ListAPIView, CreateAPIView):
+    # 添加地址需要认证权限
+    permission_classes = [IsAuthenticated]
+
+    queryset = Address.objects.filter(is_deleted=False)
+
+    serializer_class = AddressSerializer
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+
+        return Response({
+            'addresses': serializer.data,
+            'limit': 20,
+            'user_id': request.user.id,
+            'default_address_id': request.user.default_address_id
+        })
+
+
+class AddressDeleteView(DestroyAPIView, UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+
+    queryset = Address.objects.filter(is_deleted=False)
+
+    serializer_class = AddressSerializer
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.is_deleted = True
+        instance.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class AdderssAlterView(UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+
+    queryset = Address.objects.filter(is_deleted=False)
+
+    serializer_class = AddressAlterSerializer
+
+
+class AddressDefaultView(UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+
+    queryset = Address.objects.filter(is_deleted=False)
+
+    serializer_class = AddressSerializer
+
+    def update(self, request, *args, **kwargs):
+        request.user.default_address = self.get_object()
+        request.user.save()
+        return Response({'msg': 'ok'})
