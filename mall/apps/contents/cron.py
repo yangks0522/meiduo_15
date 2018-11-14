@@ -1,10 +1,11 @@
 import time
 import os
 from goods.models import GoodsChannel
+from mall import settings
 from .models import ContentCategory
 from collections import OrderedDict
 from django.template import loader
-from django.conf import settings
+
 
 
 def generate_static_index_html():
@@ -77,9 +78,9 @@ def generate_static_index_html():
     template = loader.get_template('index.html')
 
     # 模板渲染数据
-    html_data = template.rander(context)
+    html_data = template.render(context)
 
     # 写入文件
-    file_path = os.path.join(settings.GENERATED_STATIC_HTML_FILES_DIR)
+    file_path = os.path.join(settings.GENERATED_STATIC_HTML_FILES_DIR,'index.html')
     with open(file_path, 'w') as f:
         f.write(html_data)

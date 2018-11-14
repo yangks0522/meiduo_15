@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'contents.apps.ContentsConfig',
     'ckeditor',  # 富文本编辑器
     'ckeditor_uploader',  # 富文本编辑器上传图片模块
+    'django_crontab',  # 定时任务
 ]
 
 MIDDLEWARE = [
@@ -75,7 +76,7 @@ ROOT_URLCONF = 'mall.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR,'templates')],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -263,7 +264,7 @@ REST_FRAMEWORK_EXTENSIONS = {
 }
 
 # FastDFS
-FDFS_URL = 'http://192.168.229.133:8888/'  # 访问图片的路径域名 ip地址修改为自己机器的ip地址
+FDFS_URL = 'http://192.168.199.128:8888/'  # 访问图片的路径域名 ip地址修改为自己机器的ip地址
 FDFS_CLIENT_CONF = os.path.join(BASE_DIR, 'utils/fastdfs/client.conf')
 
 # 富文本编辑器ckeditor配置
@@ -276,4 +277,15 @@ CKEDITOR_CONFIGS = {
 }
 CKEDITOR_UPLOAD_PATH = ''  # 上传图片保存路径，使用了FastDFS，所以此处设为''
 
+GENERATED_STATIC_HTML_FILES_DIR = os.path.join(os.path.dirname(BASE_DIR), 'front')
+
 DEFAULT_FILE_STORAGE = 'utils.fastdfs.fastdfsstorage.MyStorage'
+
+# 定时任务
+CRONJOBS = [
+    # 每5分钟执行一次生成主页静态文件
+    ('*/1 * * * *', 'contents.cron.generate_static_index_html',
+     '>> /home/python/Desktop/Django_md/meiduo_15/mall/logs/crontab.log')
+]
+
+

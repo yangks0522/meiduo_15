@@ -19,10 +19,10 @@ class MyStorage(Storage):
 
     # 打开图片
     # 因为我们通过http方式获取图片,所以不需要在此方法中写任何代码
-    def open(self, name, mode='rb'):
+    def _open(self, name, mode='rb'):
         pass
 
-    def save(self, name, content, max_length=None):
+    def _save(self, name, content, max_length=None):
         # 创建客户端的实例对象
         # client = Fdfs_client('utils/fastdfs/client.conf')
         # client = Fdfs_client(settings.FDFS_CLIENT_CONF)
@@ -34,7 +34,7 @@ class MyStorage(Storage):
         data = content.read()
         # client.upload_by_filename() 需要知道文件的绝对路径
         # client.append_by_buffer() 上传图片二进制   会返回上传结果
-        result = client.append_by_buffer()
+        result = client.append_by_buffer(data)
         # {'Group name': 'group1',
         # 'Status': 'Upload successed.',
         # 'Local file name': '/home/python/Desktop/images/77.png',
