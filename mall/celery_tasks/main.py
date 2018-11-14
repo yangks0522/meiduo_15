@@ -35,8 +35,7 @@ app.config_from_object('celery_tasks.config')
 # autodiscover_tasks第一个参数是列表
 # 列表中的元素 是任务包的路径
 # 路径是从celery_tasks开始就可以
-app.autodiscover_tasks(['celery_tasks.sms'])
-app.autodiscover_tasks(['celery_tasks.email'])
+app.autodiscover_tasks(['celery_tasks.sms', 'celery_tasks.email', 'celery_tasks.html'])
 
 # worker 是通过指令来执行的
 # celery -A celery实例对象的文件路径   worker -l info
