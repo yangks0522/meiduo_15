@@ -24,10 +24,19 @@ from goods.models import SKU
 from .serializers import HotSKUSerializer
 from rest_framework.response import Response
 
+# class HotSKUView(APIView):
+#     def get(self, request, category_id):
+#         # 有分类  需要判断是否上架
+#         skus = SKU.objects.filter(category_id=category_id, is_launched=True).order_by('-sales')[:2]
+#         serializer = HotSKUSerializer(skus,many=True)
+#         return Response(serializer.data)
 
-class HotSKUView(APIView):
-    def get(self, request, category_id):
-        # 有分类  需要判断是否上架
-        skus = SKU.objects.filter(category_id=category_id, is_launched=True).order_by('-sales')[:2]
-        serializer = HotSKUSerializer(skus,many=True)
-        return Response(serializer.data)
+
+from rest_framework.generics import ListAPIView
+
+
+class HotSKUView(ListAPIView):
+    serializer_class = HotSKUSerializer
+
+    def get_queryset(self):
+        return SKU.objects.filter(category_id=self.kwargs['category_id'], is_launched=True).order_by('-sales')[:2]
