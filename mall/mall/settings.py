@@ -223,6 +223,8 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
     ),
+    # 分页
+    'DEFAULT_PAGINATION_CLASS': 'utils.pagination.StandardResultsSetPagination',
 }
 
 # 我们定义好了自己的用户模型,需要替换,
@@ -287,5 +289,3 @@ CRONJOBS = [
     ('*/1 * * * *', 'contents.cron.generate_static_index_html',
      '>> /home/python/Desktop/Django_md/meiduo_15/mall/logs/crontab.log')
 ]
-
-

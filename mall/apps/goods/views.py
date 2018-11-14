@@ -40,3 +40,31 @@ class HotSKUView(ListAPIView):
 
     def get_queryset(self):
         return SKU.objects.filter(category_id=self.kwargs['category_id'], is_launched=True).order_by('-sales')[:2]
+
+
+"""
+列表页面 数据获取
+1.所有返回所有数据
+2.分类排序
+3.分页查询
+
+GET     categories/(?P<category_id>\d+)/skus/?ordering=-price&page=3&page_size=2
+"""
+from rest_framework.filters import OrderingFilter
+from utils.pagination import StandardResultsSetPagination
+
+
+class SKUListView(ListAPIView):
+    # 排序
+    filter_backends = [OrderingFilter]
+    # 设置排序字段
+    ordering_fields = ['create_time', 'price', 'sales']
+    # url ?ordering=字段名
+
+    # 分页类
+    pagination_class = StandardResultsSetPagination
+
+    serializer_class = HotSKUSerializer
+
+    def get_queryset(self):
+        return SKU.objects.filter(category_id=self.kwargs['category_id'], is_launched=True)
