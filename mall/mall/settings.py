@@ -173,6 +173,13 @@ CACHES = {
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
+    },
+    "history": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/3",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
     }
 }
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
@@ -290,7 +297,7 @@ DEFAULT_FILE_STORAGE = 'utils.fastdfs.fastdfsstorage.MyStorage'
 # 定时任务
 CRONJOBS = [
     # 每5分钟执行一次生成主页静态文件
-    ('*/1 * * * *', 'contents.cron.generate_static_index_html',
+    ('*/30 * * * *', 'contents.cron.generate_static_index_html',
      '>> /home/python/Desktop/Django_md/meiduo_15/mall/logs/crontab.log')
 ]
 

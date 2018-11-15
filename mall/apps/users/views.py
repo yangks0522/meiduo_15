@@ -142,7 +142,7 @@ from .serializers import UserCenterSerializer
 #         serializer = UserCenterSerializer(user)
 #         return Response(serializer.data)
 
-from rest_framework.generics import RetrieveAPIView
+from rest_framework.generics import RetrieveAPIView, GenericAPIView
 
 
 class UserCenterView(RetrieveAPIView):
@@ -316,3 +316,43 @@ class AddressDefaultView(UpdateAPIView):
         request.user.default_address = self.get_object()
         request.user.save()
         return Response({'msg': 'ok'})
+
+
+"""
+用户浏览历史记录: 保存商品的sku_id   采用redis中的列表保存
+
+POST       /users/browerhistories/
+GET        /users/browerhistories/
+"""
+from .serializers import UserBrowerHistorySerializer
+from goods.models import SKU
+from goods.serializers import SKUSerializer
+from django_redis import get_redis_connection
+from rest_framework.mixins import CreateModelMixin
+
+
+class UserBrowerHistoryView(CreateModelMixin, GenericAPIView):
+    """
+    用户浏览记录
+    数据保存到redis中
+    POST     /users/browerhistories/
+    查看浏览记录
+    GET     /users/borwerhistories/
+
+    """
+    serializer_class = UserBrowerHistorySerializer
+
+    def post(self, request):
+        """保存"""
+        return self.create(request)
+
+    def get(self, request):
+        user_id = request.user.id
+        redis_conn = get_redis_connection('history')
+        history_sku_ids = redis_conn.lrange('history_%s' % user_id, 0, 5)
+        skus = []
+        for sku_id in history_sku_ids:
+            sku = SKU.objects.get(pk=sku_id)
+            skus.append(sku)
+        serializer = SKUSerializer(instance=skus, many=True)
+        return Response(serializer.data)

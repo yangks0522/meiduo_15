@@ -19,6 +19,7 @@ urlpatterns = [
     url(r'^addresses/(?P<pk>\d+)/$', views.AddressDeleteView.as_view()),
     url(r'^addresses/(?P<pk>\d+)/title/$', views.AdderssAlterView.as_view()),
     url(r'^addresses/(?P<pk>\d+)/status/$', views.AddressDefaultView.as_view()),
+    url(r'^browerhistories/$', views.UserBrowerHistoryView.as_view()),
 ]
 """
 header:     eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
