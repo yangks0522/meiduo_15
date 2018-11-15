@@ -36,6 +36,8 @@ from rest_framework.generics import ListAPIView
 
 
 class HotSKUView(ListAPIView):
+    pagination_class = None
+
     serializer_class = HotSKUSerializer
 
     def get_queryset(self):
@@ -68,3 +70,27 @@ class SKUListView(ListAPIView):
 
     def get_queryset(self):
         return SKU.objects.filter(category_id=self.kwargs['category_id'], is_launched=True)
+"""
+搜索的原理:对数据进行分析,把分词的数据进行记录
+步骤:
+    安装:elasticsearch
+    让haystack帮我们实现搜索功能
+        配置信息
+        生成索引
+        搜索
+
+# 模板文件路径必须正确            search/indexe /myapp(子应用文件夹)/note(模型类名小写)_text.txt
+# object 相当于模型的实例对象
+"""
+
+
+from .serializers import SKUIndexSerializer
+from drf_haystack.viewsets import HaystackViewSet
+
+class SKUSearchViewSet(HaystackViewSet):
+    """
+    SKU搜索
+    """
+    index_models = [SKU]
+
+    serializer_class = SKUIndexSerializer

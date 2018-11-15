@@ -57,7 +57,11 @@ INSTALLED_APPS = [
     'ckeditor',  # 富文本编辑器
     'ckeditor_uploader',  # 富文本编辑器上传图片模块
     'django_crontab',  # 定时任务
+    'haystack',
 ]
+
+# 当添加、修改、删除数据时，自动生成索引
+HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -289,3 +293,12 @@ CRONJOBS = [
     ('*/1 * * * *', 'contents.cron.generate_static_index_html',
      '>> /home/python/Desktop/Django_md/meiduo_15/mall/logs/crontab.log')
 ]
+
+# Haystack
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
+        'URL': 'http://192.168.199.128:9200/',  # 此处为elasticsearch运行的服务器ip地址，端口号固定为9200
+        'INDEX_NAME': 'meiduo',  # 指定elasticsearch建立的索引库的名称
+    },
+}
