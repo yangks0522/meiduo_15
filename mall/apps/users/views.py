@@ -321,7 +321,18 @@ class AddressDefaultView(UpdateAPIView):
 """
 用户浏览历史记录: 保存商品的sku_id   采用redis中的列表保存
 
+登录用户
+1.添加最近浏览
+    在详情页面中,前端发送一个请求,请求中,包含sku_id,用户信息(JWT)
+    接收参数,对数据进行校验
+    保存数据
+    返回响应
 POST       /users/browerhistories/
+
+2.获取最近浏览
+    接收数据(用户信息以jwt的形式传递)
+    查询信息
+    返回响应
 GET        /users/browerhistories/
 """
 from .serializers import UserBrowerHistorySerializer
@@ -331,28 +342,68 @@ from django_redis import get_redis_connection
 from rest_framework.mixins import CreateModelMixin
 
 
-class UserBrowerHistoryView(CreateModelMixin, GenericAPIView):
-    """
-    用户浏览记录
-    数据保存到redis中
-    POST     /users/browerhistories/
-    查看浏览记录
-    GET     /users/borwerhistories/
-
-    """
-    serializer_class = UserBrowerHistorySerializer
+class UserBrowerHistoryView(APIView):
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        """保存"""
-        return self.create(request)
+        # 接收参数,对数据进行校验
+        user = request.user
+        data = request.data
+        serializer = UserBrowerHistorySerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        # 保存数据 redis
+        # 连接redis
+        redis_conn = get_redis_connection('history')
+        # 获取商品id
+        sku_id = serializer.validated_data.get('sku_id')
+        # 先删除这个sku_id  去重    value = 0 移除表中所有与value相等的值
+        redis_conn.lrem("history_%s" % user.id, 0, sku_id)
+        # 保存到redis中
+        redis_conn.lpush("history_%s" % user.id, sku_id)
+        # 对列表进行修剪
+        redis_conn.ltrim("history_%s" % user.id, 0, 4)
+        # 返回响应
+        return Response(serializer.data)
 
     def get(self, request):
-        user_id = request.user.id
+        # 接收数据(用户信息以jwt的形式传递)
+        user = request.user
+        # 查询信息
         redis_conn = get_redis_connection('history')
-        history_sku_ids = redis_conn.lrange('history_%s' % user_id, 0, 5)
+        sku_ids = redis_conn.lrange('history_%s' % user.id, 0, 5)
+        # 根据id查询信息
         skus = []
-        for sku_id in history_sku_ids:
-            sku = SKU.objects.get(pk=sku_id)
+        for sku_id in sku_ids:
+            sku = SKU.objects.get(id=sku_id)
             skus.append(sku)
-        serializer = SKUSerializer(instance=skus, many=True)
+        serializer = SKUSerializer(skus,many=True)
+        # 返回响应
         return Response(serializer.data)
+
+# class UserBrowerHistoryView(CreateModelMixin, GenericAPIView):
+#     """
+#     用户浏览记录
+#     数据保存到redis中
+#     POST     /users/browerhistories/
+#     查看浏览记录
+#     GET     /users/borwerhistories/
+#
+#     """
+#     serializer_class = UserBrowerHistorySerializer
+#
+#     permission_classes = [IsAuthenticated]
+#
+#     def post(self, request):
+#         """保存"""
+#         return self.create(request)
+#
+#     def get(self, request):
+#         user_id = request.user.id
+#         redis_conn = get_redis_connection('history')
+#         history_sku_ids = redis_conn.lrange('history_%s' % user_id, 0, 5)
+#         skus = []
+#         for sku_id in history_sku_ids:
+#             sku = SKU.objects.get(pk=sku_id)
+#             skus.append(sku)
+#         serializer = SKUSerializer(instance=skus, many=True)
+#         return Response(serializer.data)
