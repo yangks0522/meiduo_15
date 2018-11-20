@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'django_crontab',  # 定时任务
     'haystack',
     'orders.apps.OrdersConfig',
+    'pay.apps.PayConfig',
 
 ]
 
@@ -318,3 +319,10 @@ HAYSTACK_CONNECTIONS = {
         'INDEX_NAME': 'meiduo',  # 指定elasticsearch建立的索引库的名称
     },
 }
+
+# 支付宝
+ALIPAY_APPID = "2016091900549574"
+ALIPAY_URL = "https://openapi.alipaydev.com/gateway.do"
+ALIPAY_DEBUG = True
+APP_PRIVATE_KEY_PATH = os.path.join(BASE_DIR, 'apps/pay/keys/app_private_key.pem')
+ALIPAY_PUBLIC_KEY_PATH = os.path.join(BASE_DIR, 'apps/pay/keys/alipay_public_key.pem')
